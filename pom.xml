@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.io7m.primogenitor</groupId>
+    <artifactId>com.io7m.primogenitor.full</artifactId>
+    <version>6.4.2</version>
+  </parent>
+
+  <groupId>com.io7m.bishopsgate</groupId>
+  <artifactId>com.io7m.bishopsgate</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <description>JMS → Matrix relay</description>
+  <name>com.io7m.bishopsgate</name>
+  <url>https://www.github.com/io7m/bishopsgate</url>
+
+  <modules>
+    <module>com.io7m.bishopsgate.main</module>
+    <module>com.io7m.bishopsgate.tests</module>
+  </modules>
+
+  <properties>
+    <artemis.version>2.17.0</artemis.version>
+    <com.io7m.jxtrand.version>1.0.0</com.io7m.jxtrand.version>
+    <io7m.api.previousVersion>0.0.1-SNAPSHOT</io7m.api.previousVersion>
+    <jackson.version>2.12.3</jackson.version>
+    <junit.version>5.7.0-M1</junit.version>
+    <org.immutables.version>2.8.3</org.immutables.version>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>ISC License</name>
+      <url>https://io7m.com/license/isc.txt</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/io7m/bishopsgate</url>
+    <connection>scm:git:https://github.com/io7m/bishopsgate</connection>
+    <developerConnection>scm:git:https://github.com/io7m/bishopsgate</developerConnection>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>io7m</id>
+      <name>io7m</name>
+      <email>code@io7m.com</email>
+      <url>https://io7m.com</url>
+    </developer>
+  </developers>
+
+  <issueManagement>
+    <url>https://github.com/io7m/bishopsgate/issues</url>
+    <system>GitHub Issues</system>
+  </issueManagement>
+
+  <distributionManagement>
+    <site>
+      <id>io7m.com</id>
+      <name>io7m.com</name>
+      <url>https://www.io7m.com/software/bishopsgate</url>
+    </site>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+  <ciManagement>
+    <system>GitHub Actions</system>
+    <url>https://github.com/bishopsgate/actions</url>
+  </ciManagement>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.3.0-alpha4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.8.0-beta2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>artemis-core-client</artifactId>
+        <version>${artemis.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>artemis-commons</artifactId>
+        <version>${artemis.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.io7m.jproperties</groupId>
+        <artifactId>com.io7m.jproperties.core</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.jdeferthrow</groupId>
+        <artifactId>com.io7m.jdeferthrow.core</artifactId>
+        <version>1.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.annotation.bundle</artifactId>
+        <version>1.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.annotation.versioning</artifactId>
+        <version>1.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.immutables</groupId>
+        <artifactId>value</artifactId>
+        <version>${org.immutables.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.immutables.style</groupId>
+        <artifactId>com.io7m.immutables.style</artifactId>
+        <version>0.0.1</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <plugins>
+      <!-- Generate immutables.org types -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <dependency>
+              <groupId>org.immutables</groupId>
+              <artifactId>value</artifactId>
+              <version>${org.immutables.version}</version>
+            </dependency>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+
+      <!-- Generate a site -->
+      <plugin>
+        <groupId>com.io7m.minisite</groupId>
+        <artifactId>com.io7m.minisite.maven_plugin</artifactId>
+        <inherited>false</inherited>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
