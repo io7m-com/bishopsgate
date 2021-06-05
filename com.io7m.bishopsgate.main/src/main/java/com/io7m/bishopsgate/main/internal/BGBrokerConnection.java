@@ -26,6 +26,7 @@ import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.TextMessage;
@@ -37,6 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.apache.activemq.artemis.api.jms.JMSFactoryType.CF;
 
@@ -158,13 +160,40 @@ public final class BGBrokerConnection implements Closeable
       final var message =
         this.messageConsumer.receive(500L);
 
+      if (message == null) {
+        return;
+      }
+
+      final var time =
+        Instant.ofEpochMilli(message.getJMSDeliveryTime());
+
+      if (message instanceof BytesMessage) {
+        final var bytesMessage =
+          (BytesMessage) message;
+        final var bytes =
+          new byte[Math.toIntExact(bytesMessage.getBodyLength())];
+
+        bytesMessage.readBytes(bytes);
+
+        final var text =
+          new String(bytes, UTF_8);
+
+        receiver.accept(
+          BGMessage.builder()
+            .setQueue(this.configuration.queueAddress())
+            .setTimestamp(time)
+            .setMessage(text)
+            .build()
+        );
+
+        message.acknowledge();
+      }
+
       if (message instanceof TextMessage) {
         final var textMessage =
           (TextMessage) message;
         final var text =
           textMessage.getText();
-        final var time =
-          Instant.ofEpochMilli(message.getJMSDeliveryTime());
 
         receiver.accept(
           BGMessage.builder()
