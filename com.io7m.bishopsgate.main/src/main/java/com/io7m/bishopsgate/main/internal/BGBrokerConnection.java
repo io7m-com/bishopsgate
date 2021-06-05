@@ -176,7 +176,7 @@ public final class BGBrokerConnection implements Closeable
         bytesMessage.readBytes(bytes);
 
         final var text =
-          new String(bytes, UTF_8);
+          BGBrokerConnection.createString(bytes);
 
         receiver.accept(
           BGMessage.builder()
@@ -208,6 +208,14 @@ public final class BGBrokerConnection implements Closeable
     } catch (final JMSException e) {
       throw new IOException(e);
     }
+  }
+
+  private static String createString(
+    final byte[] bytes)
+  {
+    // CHECKSTYLE:OFF
+    return new String(bytes, UTF_8);
+    // CHECKSTYLE:ON
   }
 
   @Override
