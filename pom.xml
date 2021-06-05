@@ -12,7 +12,7 @@
 
   <groupId>com.io7m.bishopsgate</groupId>
   <artifactId>com.io7m.bishopsgate</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <description>JMS → Matrix relay</description>
@@ -101,6 +101,16 @@
         <artifactId>artemis-commons</artifactId>
         <version>${artemis.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>artemis-jms-client</artifactId>
+        <version>${artemis.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-jms_2.0_spec</artifactId>
+        <version>1.0-alpha-2</version>
+      </dependency>
 
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -118,6 +128,16 @@
         <version>${jackson.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>com.io7m.junreachable</groupId>
+        <artifactId>com.io7m.junreachable.core</artifactId>
+        <version>3.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.jmulticlose</groupId>
+        <artifactId>com.io7m.jmulticlose.core</artifactId>
+        <version>0.0.1</version>
+      </dependency>
       <dependency>
         <groupId>com.io7m.jproperties</groupId>
         <artifactId>com.io7m.jproperties.core</artifactId>

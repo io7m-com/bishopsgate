@@ -17,24 +17,28 @@
 package com.io7m.bishopsgate.main.internal;
 
 import com.io7m.bishopsgate.main.BGQueueConfiguration;
-import org.apache.activemq.artemis.api.core.ActiveMQException;
-import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
-import org.apache.activemq.artemis.api.core.client.ClientConsumer;
-import org.apache.activemq.artemis.api.core.client.ClientSession;
-import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
-import org.apache.activemq.artemis.api.core.client.ServerLocator;
-import org.apache.activemq.artemis.api.core.client.SessionFailureListener;
+import com.io7m.jmulticlose.core.CloseableCollection;
+import com.io7m.jmulticlose.core.CloseableCollectionType;
+import com.io7m.junreachable.UnreachableCodeException;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.api.jms.ActiveMQJMSClient;
+import org.apache.activemq.artemis.core.remoting.impl.netty.NettyConnectorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.TextMessage;
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static org.apache.activemq.artemis.api.jms.JMSFactoryType.CF;
 
 /**
  * A connection to a message broker.
@@ -45,30 +49,23 @@ public final class BGBrokerConnection implements Closeable
   private static final Logger LOG = LoggerFactory.getLogger(BGBrokerConnection.class);
 
   private final BGQueueConfiguration configuration;
-  private final ServerLocator locator;
-  private final ClientSessionFactory clients;
-  private final ClientSession session;
-  private final ClientConsumer consumer;
+  private final CloseableCollectionType<? extends Exception> resources;
+  private final MessageConsumer messageConsumer;
   private final AtomicBoolean closed;
 
   private BGBrokerConnection(
-    final BGQueueConfiguration in_configuration,
-    final ServerLocator in_locator,
-    final ClientSessionFactory in_clients,
-    final ClientSession in_session,
-    final ClientConsumer in_consumer)
+    final BGQueueConfiguration inConfiguration,
+    final CloseableCollectionType<? extends Exception> inResources,
+    final MessageConsumer inMessageConsumer)
   {
     this.configuration =
-      Objects.requireNonNull(in_configuration, "configuration");
-    this.locator =
-      Objects.requireNonNull(in_locator, "locator");
-    this.clients =
-      Objects.requireNonNull(in_clients, "clients");
-    this.session =
-      Objects.requireNonNull(in_session, "session");
-    this.consumer =
-      Objects.requireNonNull(in_consumer, "consumer");
-    this.closed = new AtomicBoolean(false);
+      Objects.requireNonNull(inConfiguration, "configuration");
+    this.resources =
+      Objects.requireNonNull(inResources, "resources");
+    this.messageConsumer =
+      Objects.requireNonNull(inMessageConsumer, "messageConsumer");
+    this.closed =
+      new AtomicBoolean(false);
   }
 
   /**
@@ -85,6 +82,16 @@ public final class BGBrokerConnection implements Closeable
     final BGQueueConfiguration configuration)
     throws Exception
   {
+    final var resources =
+      CloseableCollection.create();
+
+    final var transport =
+      new TransportConfiguration(NettyConnectorFactory.class.getName());
+    final var connections =
+      resources.add(
+        ActiveMQJMSClient.createConnectionFactoryWithoutHA(CF, transport)
+      );
+
     final var address =
       new StringBuilder(64)
         .append("tcp://")
@@ -94,43 +101,34 @@ public final class BGBrokerConnection implements Closeable
         .append("?sslEnabled=true")
         .toString();
 
-    final var locator =
-      ActiveMQClient.createServerLocator(address);
-    final var clients =
-      locator.createSessionFactory();
-    final var session =
-      clients.createSession(
-        configuration.brokerUser(),
-        configuration.brokerPassword(),
-        false,
-        false,
-        false,
-        false,
-        1);
+    connections.setBrokerURL(address);
+    connections.setClientID(UUID.randomUUID().toString());
+    connections.setUser(configuration.brokerUser());
+    connections.setPassword(configuration.brokerPassword());
 
-    final var consumer =
-      session.createConsumer(configuration.queueAddress());
+    switch (configuration.queueKind()) {
+      case TOPIC: {
+        final var topicConnection =
+          resources.add(
+            connections.createTopicConnection()
+          );
 
-    session.start();
+        final var session =
+          resources.add(
+            topicConnection.createTopicSession(false, AUTO_ACKNOWLEDGE)
+          );
 
-    final var connection =
-      new BGBrokerConnection(
-        configuration,
-        locator,
-        clients,
-        session,
-        consumer);
+        final var topic =
+          session.createTopic(configuration.queueAddress());
+        final var subscriber =
+          resources.add(session.createSubscriber(topic));
 
-    session.addFailureListener(new RSessionFailureListener(connection));
-    return connection;
-  }
+        topicConnection.start();
+        return new BGBrokerConnection(configuration, resources, subscriber);
+      }
+    }
 
-  private static String stringOfBytes(
-    final byte[] bytes)
-  {
-    // CHECKSTYLE:OFF
-    return new String(bytes, UTF_8);
-    // CHECKSTYLE:ON
+    throw new UnreachableCodeException();
   }
 
   /**
@@ -139,12 +137,6 @@ public final class BGBrokerConnection implements Closeable
 
   public boolean isOpen()
   {
-    if (this.session.isClosed()) {
-      return false;
-    }
-    if (this.consumer.isClosed()) {
-      return false;
-    }
     return !this.closed.get();
   }
 
@@ -162,15 +154,17 @@ public final class BGBrokerConnection implements Closeable
   {
     try {
       Objects.requireNonNull(receiver, "receiver");
-      final var message = this.consumer.receive(500L);
 
-      if (message != null) {
-        final var size = message.getBodySize();
-        final var bytes = new byte[size];
-        final var buffer = message.getBodyBuffer();
-        buffer.readBytes(bytes);
-        final var text = stringOfBytes(bytes);
-        final var time = Instant.ofEpochMilli(message.getTimestamp());
+      final var message =
+        this.messageConsumer.receive(500L);
+
+      if (message instanceof TextMessage) {
+        final var textMessage =
+          (TextMessage) message;
+        final var text =
+          textMessage.getText();
+        final var time =
+          Instant.ofEpochMilli(message.getJMSDeliveryTime());
 
         receiver.accept(
           BGMessage.builder()
@@ -181,9 +175,8 @@ public final class BGBrokerConnection implements Closeable
         );
 
         message.acknowledge();
-        this.session.commit();
       }
-    } catch (final ActiveMQException e) {
+    } catch (final JMSException e) {
       throw new IOException(e);
     }
   }
@@ -193,117 +186,10 @@ public final class BGBrokerConnection implements Closeable
     throws IOException
   {
     if (this.closed.compareAndSet(false, true)) {
-      IOException exception = null;
-      exception = this.closeConsumer(exception);
-      exception = this.closeSession(exception);
-      exception = this.closeClients(exception);
-      exception = this.closeLocator(exception);
-
-      if (exception != null) {
-        throw exception;
-      }
-    }
-  }
-
-  private IOException closeLocator(final IOException exception)
-  {
-    var ioException = exception;
-    try {
-      this.locator.close();
-    } catch (final Exception e) {
-      if (ioException == null) {
-        ioException = new IOException("Failed to close resources");
-      }
-      ioException.addSuppressed(e);
-    }
-    return ioException;
-  }
-
-  private IOException closeClients(final IOException exception)
-  {
-    var ioException = exception;
-    try {
-      this.clients.close();
-    } catch (final Exception e) {
-      if (ioException == null) {
-        ioException = new IOException("Failed to close resources");
-      }
-      ioException.addSuppressed(e);
-    }
-    return ioException;
-  }
-
-  private IOException closeSession(final IOException exception)
-  {
-    var ioException = exception;
-    try {
-      this.session.close();
-    } catch (final Exception e) {
-      if (ioException == null) {
-        ioException = new IOException("Failed to close resources");
-      }
-      ioException.addSuppressed(e);
-    }
-    return ioException;
-  }
-
-  private IOException closeConsumer(final IOException exception)
-  {
-    var ioException = exception;
-    try {
-      this.consumer.close();
-    } catch (final Exception e) {
-      ioException = new IOException("Failed to close resources");
-      ioException.addSuppressed(e);
-    }
-    return ioException;
-  }
-
-  private static final class RSessionFailureListener
-    implements SessionFailureListener
-  {
-    private final BGBrokerConnection connection;
-
-    RSessionFailureListener(
-      final BGBrokerConnection inConnection)
-    {
-      this.connection =
-        Objects.requireNonNull(inConnection, "connection");
-    }
-
-    @Override
-    public void beforeReconnect(
-      final ActiveMQException exception)
-    {
       try {
-        this.connection.close();
-      } catch (final IOException e) {
-        LOG.debug("error closing connection: ", e);
-      }
-    }
-
-    @Override
-    public void connectionFailed(
-      final ActiveMQException exception,
-      final boolean failedOver)
-    {
-      try {
-        this.connection.close();
-      } catch (final IOException e) {
-        LOG.debug("error closing connection: ", e);
-      }
-    }
-
-    @Override
-    public void connectionFailed(
-      final ActiveMQException exception,
-      final boolean failedOver,
-      final String scaleDownTargetNodeID)
-    {
-      try {
-        this.connection.close();
-      } catch (final IOException e) {
-        LOG.debug("error closing connection: ", e);
+        this.resources.close();
+      } catch (final Exception e) {
+        throw new IOException(e);
       }
     }
   }

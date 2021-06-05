@@ -124,6 +124,15 @@ public final class BGConfigurations
       );
     });
     tracker.catching(() -> {
+      builder.setQueueKind(
+        BGQueueKind.valueOf(
+          JProperties.getString(
+            properties,
+            String.format("bishopsgate.queues.%s.queue_kind", directory)))
+      );
+    });
+
+    tracker.catching(() -> {
       builder.setBrokerUser(
         JProperties.getString(
           properties,

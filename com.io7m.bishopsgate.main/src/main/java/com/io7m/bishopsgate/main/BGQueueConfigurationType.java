@@ -28,11 +28,18 @@ import org.immutables.value.Value;
 public interface BGQueueConfigurationType
 {
   /**
-   * @return The queue address
+   * @return The JMS topic or anycast address
    */
 
   @Value.Parameter
   String queueAddress();
+
+  /**
+   * @return The queue kind
+   */
+
+  @Value.Parameter
+  BGQueueKind queueKind();
 
   /**
    * @return The user account on the message broker
