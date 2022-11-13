@@ -316,15 +316,7 @@ public final class BGClient implements AutoCloseable
       final BGMessage message)
     {
       LOG.debug("received: {}: {}", message.queue(), message.message());
-
-      final String text =
-        new StringBuilder(64)
-          .append(message.queue())
-          .append(": ")
-          .append(message.message())
-          .toString();
-
-      this.sender.send(ICON_MESSAGE, text, PLAIN);
+      this.sender.send("", message.message(), PLAIN);
     }
   }
 }
