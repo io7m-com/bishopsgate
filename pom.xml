@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.io7m.primogenitor</groupId>
     <artifactId>com.io7m.primogenitor.full</artifactId>
-    <version>7.5.0</version>
+    <version>8.0.0-beta0001</version>
   </parent>
 
   <groupId>com.io7m.bishopsgate</groupId>
@@ -25,10 +25,10 @@
   </modules>
 
   <properties>
-    <artemis.version>2.28.0</artemis.version>
+    <artemis.version>2.29.0</artemis.version>
     <com.io7m.jxtrand.version>1.0.0</com.io7m.jxtrand.version>
     <io7m.api.previousVersion>0.0.3</io7m.api.previousVersion>
-    <jackson.version>2.15.0</jackson.version>
+    <jackson.version>2.15.2</jackson.version>
     <junit.version>5.7.0-M1</junit.version>
     <org.immutables.version>2.9.3</org.immutables.version>
   </properties>
@@ -82,7 +82,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.4.7</version>
+        <version>1.4.8</version>
       </dependency>
 
       <dependency>
