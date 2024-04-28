@@ -16,10 +16,11 @@
 
   <description>JMS → Matrix relay (Test suite)</description>
   <name>com.io7m.bishopsgate.tests</name>
-  <url>https://www.github.com/io7m/bishopsgate</url>
+  <url>https://www.io7m.com/software/bishopsgate</url>
 
   <properties>
     <mdep.analyze.skip>true</mdep.analyze.skip>
+    <checkstyle.skip>true</checkstyle.skip>
   </properties>
 
   <dependencies>

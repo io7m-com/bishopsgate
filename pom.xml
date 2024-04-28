@@ -17,7 +17,7 @@
 
   <description>JMS → Matrix relay</description>
   <name>com.io7m.bishopsgate</name>
-  <url>https://www.github.com/io7m/bishopsgate</url>
+  <url>https://www.io7m.com/software/bishopsgate</url>
 
   <modules>
     <module>com.io7m.bishopsgate.main</module>
@@ -25,9 +25,15 @@
   </modules>
 
   <properties>
-    <artemis.version>2.31.2</artemis.version>
-    <com.io7m.jxtrand.version>1.0.0</com.io7m.jxtrand.version>
+    <!-- Configuration. -->
     <io7m.api.previousVersion>0.0.3</io7m.api.previousVersion>
+    <io7m.java.targetJavaVersion>21</io7m.java.targetJavaVersion>
+
+    <!-- io7m dependencies. -->
+    <com.io7m.jxtrand.version>1.0.0</com.io7m.jxtrand.version>
+
+    <!-- Third-party dependencies. -->
+    <artemis.version>2.31.2</artemis.version>
     <jackson.version>2.16.1</jackson.version>
     <junit.version>5.7.0-M1</junit.version>
     <org.immutables.version>2.10.0</org.immutables.version>
@@ -36,14 +42,14 @@
   <licenses>
     <license>
       <name>ISC</name>
-      <url>https://io7m.com/license/isc.txt</url>
+      <url>https://www.io7m.com/license/isc.txt</url>
     </license>
   </licenses>
 
   <scm>
-    <url>https://github.com/io7m/bishopsgate</url>
-    <connection>scm:git:https://github.com/io7m/bishopsgate</connection>
-    <developerConnection>scm:git:https://github.com/io7m/bishopsgate</developerConnection>
+    <url>https://www.github.com/io7m-com/bishopsgate</url>
+    <connection>scm:git:https://www.github.com/io7m-com/bishopsgate</connection>
+    <developerConnection>scm:git:https://www.github.com/io7m-com/bishopsgate</developerConnection>
   </scm>
 
   <developers>
@@ -56,7 +62,7 @@
   </developers>
 
   <issueManagement>
-    <url>https://github.com/io7m/bishopsgate/issues</url>
+    <url>https://www.github.com/io7m-com/bishopsgate/issues</url>
     <system>GitHub Issues</system>
   </issueManagement>
 
@@ -74,7 +80,7 @@
 
   <ciManagement>
     <system>GitHub Actions</system>
-    <url>https://github.com/bishopsgate/actions</url>
+    <url>https://www.github.com/io7m-com/bishopsgate/actions</url>
   </ciManagement>
 
   <dependencyManagement>
