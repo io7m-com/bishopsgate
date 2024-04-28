@@ -34,7 +34,7 @@
 
     <!-- Third-party dependencies. -->
     <artemis.version>2.33.0</artemis.version>
-    <jackson.version>2.16.1</jackson.version>
+    <jackson.version>2.17.0</jackson.version>
     <junit.version>5.7.0-M1</junit.version>
     <org.immutables.version>2.10.0</org.immutables.version>
   </properties>
