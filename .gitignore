@@ -3,3 +3,5 @@
 pom.xml.versionsBackup
 target
 bishopsgate.conf
+.jqwik-database
+dependency-reduced-pom.xml
