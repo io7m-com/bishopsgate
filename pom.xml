@@ -36,7 +36,7 @@
     <artemis.version>2.42.0</artemis.version>
     <jackson.version>2.19.2</jackson.version>
     <junit.version>5.7.0-M1</junit.version>
-    <org.immutables.version>2.11.4</org.immutables.version>
+    <org.immutables.version>2.11.6</org.immutables.version>
   </properties>
 
   <licenses>
