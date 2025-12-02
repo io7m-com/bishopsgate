@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0">
 
@@ -25,6 +25,8 @@
   </modules>
 
   <properties>
+    <io7m.workID>cd3fe884-66d8-3b68-8364-6ec99fb9e801</io7m.workID>
+
     <!-- Configuration. -->
     <io7m.api.previousVersion>0.0.3</io7m.api.previousVersion>
     <io7m.java.targetJavaVersion>21</io7m.java.targetJavaVersion>
