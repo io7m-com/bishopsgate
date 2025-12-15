@@ -48,7 +48,7 @@
       <artifactId>jackson-annotations</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
+      <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
@@ -63,6 +63,10 @@
       <groupId>com.io7m.junreachable</groupId>
       <artifactId>com.io7m.junreachable.core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.io7m.dixmont</groupId>
+      <artifactId>com.io7m.dixmont.core</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.immutables</groupId>
@@ -70,8 +74,8 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.io7m.immutables.style</groupId>
-      <artifactId>com.io7m.immutables.style</artifactId>
+      <groupId>com.io7m.immutables-style</groupId>
+      <artifactId>com.io7m.immutables-style</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

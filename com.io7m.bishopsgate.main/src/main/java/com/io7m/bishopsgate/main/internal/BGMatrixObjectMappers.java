@@ -16,10 +16,14 @@
 
 package com.io7m.bishopsgate.main.internal;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import com.io7m.dixmont.core.DmJsonRestrictedDeserializers;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+
+import java.math.BigInteger;
+import java.net.URI;
 
 /**
  * JSON object mappers.
@@ -38,18 +42,29 @@ public final class BGMatrixObjectMappers
    * @return A new object mapper
    */
 
-  public static ObjectMapper createObjectMapper()
+  public static JsonMapper createObjectMapper()
   {
-    final JsonMapper mapper =
+    final var builder =
       JsonMapper.builder()
         .configure(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS, true)
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .build();
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-    final var deserializers = BGMatrixJSONDeserializers.create();
+    final var dixB = DmJsonRestrictedDeserializers.builder();
+    dixB.allowClass(BGMatrixJSON.BGError.class);
+    dixB.allowClass(BGMatrixJSON.BGLoginRequest.class);
+    dixB.allowClass(BGMatrixJSON.BGLoginResponse.class);
+    dixB.allowClass(BGMatrixJSON.BGRoomResolveAliasResponse.class);
+    dixB.allowClass(BGMatrixJSON.BGRoomMessage.class);
+    dixB.allowClass(String.class);
+    dixB.allowClass(BigInteger.class);
+    dixB.allowClass(URI.class);
+    dixB.allowListsOfClass(String.class);
+    dixB.allowListsOfClass(BigInteger.class);
+
+    final var deserializers = dixB.build();
     final var simpleModule = new SimpleModule();
     simpleModule.setDeserializers(deserializers);
-    mapper.registerModule(simpleModule);
-    return mapper;
+    builder.addModule(simpleModule);
+    return builder.build();
   }
 }

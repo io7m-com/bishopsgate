@@ -36,7 +36,7 @@
 
     <!-- Third-party dependencies. -->
     <artemis.version>2.44.0</artemis.version>
-    <jackson.version>2.19.2</jackson.version>
+    <jackson.version>3.0.3</jackson.version>
     <junit.version>5.7.0-M1</junit.version>
     <org.immutables.version>2.11.6</org.immutables.version>
   </properties>
@@ -121,7 +121,7 @@
       </dependency>
 
       <dependency>
-        <groupId>com.fasterxml.jackson</groupId>
+        <groupId>tools.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
         <version>${jackson.version}</version>
         <type>pom</type>
@@ -164,9 +164,14 @@
         <version>${org.immutables.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.io7m.immutables.style</groupId>
-        <artifactId>com.io7m.immutables.style</artifactId>
-        <version>0.0.1</version>
+        <groupId>com.io7m.immutables-style</groupId>
+        <artifactId>com.io7m.immutables-style</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.io7m.dixmont</groupId>
+        <artifactId>com.io7m.dixmont.core</artifactId>
+        <version>3.1.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
